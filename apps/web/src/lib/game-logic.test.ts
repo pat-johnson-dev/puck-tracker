@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateScore } from './game-logic';
+import { calculateScore, getCurrentPeriod } from './game-logic';
 
 describe('calculateScore', () => {
   it('returns 0-0 when there are no events', () => {
@@ -35,5 +35,46 @@ describe('calculateScore', () => {
       { type: 'goal' as const, team: 'away' as const },
     ];
     expect(calculateScore(events)).toEqual({ home: 1, away: 1 });
+  });
+});
+
+describe('getCurrentPeriod', () => {
+  it('returns period 1 when there are no events', () => {
+    expect(getCurrentPeriod([])).toBe(1);
+  });
+
+  it('returns period 1 when there are no period_end events', () => {
+    const events = [
+      { event_type: 'stoppage', event_subtype: 'icing' },
+      { event_type: 'goal', event_subtype: null },
+      { event_type: 'faceoff', event_subtype: null },
+    ];
+    expect(getCurrentPeriod(events)).toBe(1);
+  });
+
+  it('returns period 2 after one period_end event', () => {
+    const events = [
+      { event_type: 'stoppage', event_subtype: 'icing' },
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+    ];
+    expect(getCurrentPeriod(events)).toBe(2);
+  });
+
+  it('returns period 3 after two period_end events', () => {
+    const events = [
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+      { event_type: 'goal', event_subtype: null },
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+    ];
+    expect(getCurrentPeriod(events)).toBe(3);
+  });
+
+  it('returns period 4 (OT) after three period_end events', () => {
+    const events = [
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+      { event_type: 'stoppage', event_subtype: 'period_end' },
+    ];
+    expect(getCurrentPeriod(events)).toBe(4);
   });
 });

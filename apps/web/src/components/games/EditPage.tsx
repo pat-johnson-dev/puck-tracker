@@ -1,7 +1,8 @@
 import type { Component } from 'solid-js';
-import { createResource, createSignal, Show } from 'solid-js';
+import { createResource, createSignal, Show, createMemo } from 'solid-js';
 import { A, useParams } from '@solidjs/router';
 import { fetchGameById, fetchGameEvents, createGameEvent } from '../../lib/games';
+import { calculateScore, getCurrentPeriod } from '../../lib/game-logic';
 import { Layout } from '../layout';
 import GameScoreboard from './Scoreboard';
 import EventButtonBar from './EventButtonBar';
@@ -14,6 +15,18 @@ const GameEditPage: Component = () => {
   const [game] = createResource(() => params.id, fetchGameById);
   const [events, { refetch: refetchEvents }] = createResource(() => params.id, fetchGameEvents);
   const [isStoppageDialogOpen, setIsStoppageDialogOpen] = createSignal(false);
+
+  // Derived game state from events
+  const score = createMemo(() => {
+    const evts = events() ?? [];
+    return calculateScore(
+      evts
+        .filter((e) => e.event_type === 'goal')
+        .map((e) => ({ type: 'goal' as const, team: e.team as 'home' | 'away' }))
+    );
+  });
+
+  const currentPeriod = createMemo(() => getCurrentPeriod(events() ?? []));
 
   const handleStop = () => {
     setIsStoppageDialogOpen(true);
@@ -31,7 +44,7 @@ const GameEditPage: Component = () => {
 
   const handleStoppageSave = async (event: GameEventInsert) => {
     try {
-      await createGameEvent(event);
+      await createGameEvent(event, game()?.status ?? undefined);
       refetchEvents();
     } catch (error) {
       console.error('Failed to save stoppage:', error);
@@ -40,7 +53,7 @@ const GameEditPage: Component = () => {
 
   const handleStoppageSaveAndFaceoff = async (event: GameEventInsert) => {
     try {
-      await createGameEvent(event);
+      await createGameEvent(event, game()?.status ?? undefined);
       refetchEvents();
       // TODO: Open faceoff modal
       console.log('Opening faceoff modal...');
@@ -160,9 +173,9 @@ const GameEditPage: Component = () => {
             {/* Scoreboard */}
             <GameScoreboard
               game={game()!}
-              awayScore={0}
-              homeScore={0}
-              period={0}
+              awayScore={score().away}
+              homeScore={score().home}
+              period={currentPeriod()}
               timeRemaining="20:00"
             />
 
@@ -182,6 +195,7 @@ const GameEditPage: Component = () => {
           gameId={game()!.id}
           homeTeam={game()!.home_team}
           awayTeam={game()!.away_team}
+          currentPeriod={currentPeriod()}
           onOpenChange={setIsStoppageDialogOpen}
           onSave={handleStoppageSave}
           onSaveAndFaceoff={handleStoppageSaveAndFaceoff}

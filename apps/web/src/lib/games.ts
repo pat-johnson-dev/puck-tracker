@@ -50,14 +50,34 @@ export async function createGame(game: GameInsert): Promise<Game> {
 }
 
 /**
- * Creates a new game event
+ * Updates a game's status
  */
-export async function createGameEvent(event: GameEventInsert): Promise<GameEvent> {
+export async function updateGameStatus(gameId: string, status: string): Promise<void> {
+  const { error } = await supabase.from('game').update({ status }).eq('id', gameId);
+
+  if (error) {
+    console.error('Error updating game status:', error);
+    throw new Error(`Failed to update game status: ${error.message}`);
+  }
+}
+
+/**
+ * Creates a new game event and updates game status to in_progress if needed
+ */
+export async function createGameEvent(
+  event: GameEventInsert,
+  currentGameStatus?: string
+): Promise<GameEvent> {
   const { data, error } = await supabase.from('game_event').insert(event).select().single();
 
   if (error) {
     console.error('Error creating game event:', error);
     throw new Error(`Failed to create game event: ${error.message}`);
+  }
+
+  // Update game status to in_progress if it's currently "new"
+  if (currentGameStatus === 'new' && event.game_id) {
+    await updateGameStatus(event.game_id, 'in_progress');
   }
 
   return data;

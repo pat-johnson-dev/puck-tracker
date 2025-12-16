@@ -17,6 +17,7 @@ interface StoppageDialogProps {
   gameId: string;
   homeTeam: string;
   awayTeam: string;
+  currentPeriod: number;
   onOpenChange: (open: boolean) => void;
   onSave: (event: GameEventInsert) => void;
   onSaveAndFaceoff: (event: GameEventInsert) => void;
@@ -71,7 +72,7 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
   const [penaltyDuration, setPenaltyDuration] = createSignal<number | ''>('');
   const [penaltyShot, setPenaltyShot] = createSignal(false);
   const [otherReason, setOtherReason] = createSignal<OtherStoppageReasonValue | ''>('');
-  const [period, setPeriod] = createSignal<number | ''>('');
+  const [period, setPeriod] = createSignal<number | ''>(props.currentPeriod);
   const [gameTime, setGameTime] = createSignal('');
 
   const resetForm = () => {
@@ -85,7 +86,7 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
     setPenaltyDuration('');
     setPenaltyShot(false);
     setOtherReason('');
-    setPeriod('');
+    setPeriod(props.currentPeriod);
     setGameTime('');
   };
 

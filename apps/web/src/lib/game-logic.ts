@@ -8,13 +8,14 @@ export type GoalEvent = {
 
 export type StopEvent = {
   type: 'stoppage';
+  subtype?: string;
 };
 
 export type FaceoffEvent = {
   type: 'faceoff';
 };
 
-export type GameEvent = GoalEvent | StopEvent | FaceoffEvent;
+export type GameLogicEvent = GoalEvent | StopEvent | FaceoffEvent;
 
 export type Score = {
   home: number;
@@ -24,7 +25,7 @@ export type Score = {
 /**
  * Calculate the current score from a list of game events
  */
-export function calculateScore(events: GameEvent[]): Score {
+export function calculateScore(events: GameLogicEvent[]): Score {
   return events.reduce(
     (score, event) => {
       if (event.type === 'goal') {
@@ -37,4 +38,16 @@ export function calculateScore(events: GameEvent[]): Score {
     },
     { home: 0, away: 0 }
   );
+}
+
+/**
+ * Determine the current period based on period_end events
+ */
+export function getCurrentPeriod(
+  events: { event_type: string; event_subtype: string | null }[]
+): number {
+  const periodEndCount = events.filter(
+    (e) => e.event_type === 'stoppage' && e.event_subtype === 'period_end'
+  ).length;
+  return periodEndCount + 1;
 }
