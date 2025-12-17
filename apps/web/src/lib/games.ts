@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Game, GameInsert } from '../types/game';
+import type { Game, GameInsert, Team, TeamInsert } from '../types/game';
 import type { GameEvent, GameEventInsert } from '../types/game-event';
 
 /**
@@ -50,34 +50,14 @@ export async function createGame(game: GameInsert): Promise<Game> {
 }
 
 /**
- * Updates a game's status
+ * Creates a new game event
  */
-export async function updateGameStatus(gameId: string, status: string): Promise<void> {
-  const { error } = await supabase.from('game').update({ status }).eq('id', gameId);
-
-  if (error) {
-    console.error('Error updating game status:', error);
-    throw new Error(`Failed to update game status: ${error.message}`);
-  }
-}
-
-/**
- * Creates a new game event and updates game status to in_progress if needed
- */
-export async function createGameEvent(
-  event: GameEventInsert,
-  currentGameStatus?: string
-): Promise<GameEvent> {
+export async function createGameEvent(event: GameEventInsert): Promise<GameEvent> {
   const { data, error } = await supabase.from('game_event').insert(event).select().single();
 
   if (error) {
     console.error('Error creating game event:', error);
     throw new Error(`Failed to create game event: ${error.message}`);
-  }
-
-  // Update game status to in_progress if it's currently "new"
-  if (currentGameStatus === 'new' && event.game_id) {
-    await updateGameStatus(event.game_id, 'in_progress');
   }
 
   return data;
@@ -96,6 +76,34 @@ export async function fetchGameEvents(gameId: string): Promise<GameEvent[]> {
   if (error) {
     console.error('Error fetching game events:', error);
     throw new Error(`Failed to fetch game events: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
+/**
+ * Fetches all teams
+ */
+export async function fetchTeams(): Promise<Team[]> {
+  const { data, error } = await supabase.from('team').select('*').order('name');
+
+  if (error) {
+    console.error('Error fetching teams:', error);
+    throw new Error(`Failed to fetch teams: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
+/**
+ * Creates a new team
+ */
+export async function createTeam(team: TeamInsert): Promise<Team> {
+  const { data, error } = await supabase.from('team').insert(team).select().single();
+
+  if (error) {
+    console.error('Error creating team:', error);
+    throw new Error(`Failed to create team: ${error.message}`);
   }
 
   return data ?? [];

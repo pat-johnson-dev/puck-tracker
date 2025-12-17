@@ -10,10 +10,8 @@ export type Database = {
     Tables: {
       game: {
         Row: {
-          away_score: number | null;
-          away_team: string;
-          home_score: number | null;
-          home_team: string;
+          away_team_id: string;
+          home_team_id: string;
           id: string;
           location: string | null;
           start_date: string | null;
@@ -21,10 +19,8 @@ export type Database = {
           status: string | null;
         };
         Insert: {
-          away_score?: number | null;
-          away_team: string;
-          home_score?: number | null;
-          home_team: string;
+          away_team_id: string;
+          home_team_id: string;
           id?: string;
           location?: string | null;
           start_date?: string | null;
@@ -32,17 +28,30 @@ export type Database = {
           status?: string | null;
         };
         Update: {
-          away_score?: number | null;
-          away_team?: string;
-          home_score?: number | null;
-          home_team?: string;
+          away_team_id?: string;
+          home_team_id?: string;
           id?: string;
           location?: string | null;
           start_date?: string | null;
           start_time?: string | null;
           status?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'game_away_team_id_fkey';
+            columns: ['away_team_id'];
+            isOneToOne: false;
+            referencedRelation: 'team';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'game_home_team_id_fkey';
+            columns: ['home_team_id'];
+            isOneToOne: false;
+            referencedRelation: 'team';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       game_event: {
         Row: {
@@ -85,34 +94,46 @@ export type Database = {
           },
         ];
       };
+      team: {
+        Row: {
+          id: string;
+          name: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       team_roster: {
         Row: {
-          game_id: string;
           id: string;
           player_name: string | null;
           player_number: string;
-          team: string;
+          team_id: string;
         };
         Insert: {
-          game_id: string;
           id?: string;
           player_name?: string | null;
           player_number: string;
-          team: string;
+          team_id: string;
         };
         Update: {
-          game_id?: string;
           id?: string;
           player_name?: string | null;
           player_number?: string;
-          team?: string;
+          team_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'team_roster_game_id_fkey';
-            columns: ['game_id'];
+            foreignKeyName: 'team_roster_team_id_fkey';
+            columns: ['team_id'];
             isOneToOne: false;
-            referencedRelation: 'game';
+            referencedRelation: 'team';
             referencedColumns: ['id'];
           },
         ];

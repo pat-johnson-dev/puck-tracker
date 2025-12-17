@@ -2,21 +2,22 @@ import type { Component } from 'solid-js';
 import { createSignal, Show, For } from 'solid-js';
 import { Dialog } from '@kobalte/core/dialog';
 import type {
-  Team,
+  Team as EventTeam,
   StoppageSubtypeValue,
   StoppageDetails,
   OtherStoppageReasonValue,
   PenaltyTypeValue,
   GameEventInsert,
 } from '../../types/game-event';
+import type { Team } from '../../types/game';
 import { StoppageSubtype } from '../../types/game-event';
 import TeamSelector from './TeamSelector';
 
 interface StoppageDialogProps {
   open: boolean;
   gameId: string;
-  homeTeam: string;
-  awayTeam: string;
+  homeTeam: Team;
+  awayTeam: Team;
   currentPeriod: number;
   onOpenChange: (open: boolean) => void;
   onSave: (event: GameEventInsert) => void;
@@ -64,7 +65,7 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
   const [selectedType, setSelectedType] = createSignal<StoppageSubtypeValue | null>(null);
 
   // Form fields
-  const [team, setTeam] = createSignal<Team | ''>('');
+  const [team, setTeam] = createSignal<EventTeam | ''>('');
   const [player, setPlayer] = createSignal('');
   const [playerCarrying, setPlayerCarrying] = createSignal('');
   const [playerOffside, setPlayerOffside] = createSignal('');
@@ -242,8 +243,8 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
                         <TeamSelector
                           value={team()}
                           onChange={setTeam}
-                          homeTeam={props.homeTeam}
-                          awayTeam={props.awayTeam}
+                          homeTeam={props.homeTeam.name}
+                          awayTeam={props.awayTeam.name}
                         />
                       </div>
                       <div>
@@ -281,8 +282,8 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
                         <TeamSelector
                           value={team()}
                           onChange={setTeam}
-                          homeTeam={props.homeTeam}
-                          awayTeam={props.awayTeam}
+                          homeTeam={props.homeTeam.name}
+                          awayTeam={props.awayTeam.name}
                         />
                       </div>
                       <div>
@@ -306,8 +307,8 @@ const StoppageDialog: Component<StoppageDialogProps> = (props) => {
                         <TeamSelector
                           value={team()}
                           onChange={setTeam}
-                          homeTeam={props.homeTeam}
-                          awayTeam={props.awayTeam}
+                          homeTeam={props.homeTeam.name}
+                          awayTeam={props.awayTeam.name}
                         />
                       </div>
                       <div>
